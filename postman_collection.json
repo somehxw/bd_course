@@ -1,0 +1,734 @@
+{
+  "info": {
+    "name": "database_course_full_flow",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Init Vars",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const ts = Date.now().toString();",
+              "pm.collectionVariables.set('ts', ts);",
+              "pm.collectionVariables.set('student_email', `student_${ts}@example.com`);",
+              "pm.collectionVariables.set('teacher_email', `teacher_${ts}@example.com`);",
+              "pm.collectionVariables.set('password_hash', 'testhash');",
+              "pm.collectionVariables.set('course_title', `Course ${ts}`);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/docs/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "docs",
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "User Statuses List",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const data = pm.response.json() || [];",
+              "const active = data.find((item) => item.code === 'active') || data[0];",
+              "pm.collectionVariables.set('user_status_active_id', active ? active.status_id : null);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/dictionaries/user-statuses/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "dictionaries",
+            "user-statuses",
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "Course Levels List",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const data = pm.response.json() || [];",
+              "const level = data.find((item) => item.code === 'beginner') || data[0];",
+              "pm.collectionVariables.set('course_level_id', level ? level.level_id : null);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/dictionaries/course-levels/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "dictionaries",
+            "course-levels",
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "Assignment Types List",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const data = pm.response.json() || [];",
+              "const type = data.find((item) => item.code === 'test') || data[0];",
+              "pm.collectionVariables.set('assignment_type_id', type ? type.type_id : null);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/dictionaries/assignment-types/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "dictionaries",
+            "assignment-types",
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "Enrollment Statuses List",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const data = pm.response.json() || [];",
+              "const active = data.find((item) => item.code === 'active') || data[0];",
+              "const completed = data.find((item) => item.code === 'completed') || data[0];",
+              "pm.collectionVariables.set('enrollment_status_active_id', active ? active.status_id : null);",
+              "pm.collectionVariables.set('enrollment_status_completed_id', completed ? completed.status_id : null);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/dictionaries/enrollment-statuses/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "dictionaries",
+            "enrollment-statuses",
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "Languages List",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const data = pm.response.json() || [];",
+              "const lang = data.find((item) => item.code === 'en') || data[0];",
+              "pm.collectionVariables.set('language_id', lang ? lang.language_id : null);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/dictionaries/languages/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "dictionaries",
+            "languages",
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "Categories List",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const data = pm.response.json() || [];",
+              "pm.collectionVariables.set('category_id', data[0] ? data[0].category_id : null);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/dictionaries/categories/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "dictionaries",
+            "categories",
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Student User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const data = pm.response.json();",
+              "pm.collectionVariables.set('student_user_id', data.user_id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{student_email}}\",\n  \"password_hash\": \"{{password_hash}}\",\n  \"first_name\": \"Test\",\n  \"last_name\": \"Student\",\n  \"phone\": \"\",\n  \"status_id\": {{user_status_active_id}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/accounts/users/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "accounts",
+            "users",
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Teacher User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const data = pm.response.json();",
+              "pm.collectionVariables.set('teacher_user_id', data.user_id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{teacher_email}}\",\n  \"password_hash\": \"{{password_hash}}\",\n  \"first_name\": \"Test\",\n  \"last_name\": \"Teacher\",\n  \"phone\": \"\",\n  \"status_id\": {{user_status_active_id}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/accounts/users/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "accounts",
+            "users",
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Student Profile",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const data = pm.response.json();",
+              "pm.collectionVariables.set('student_id', data.student_id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"student_id\": {{student_user_id}},\n  \"birth_date\": \"2000-01-01\",\n  \"education_level\": \"bachelor\",\n  \"university\": \"Test University\",\n  \"faculty\": \"Test Faculty\",\n  \"year_of_study\": 2,\n  \"scholarship\": false\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/accounts/students/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "accounts",
+            "students",
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Teacher Profile",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const data = pm.response.json();",
+              "pm.collectionVariables.set('teacher_id', data.teacher_id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"teacher_id\": {{teacher_user_id}},\n  \"academic_degree\": \"MSc\",\n  \"experience_years\": 5,\n  \"specialization\": \"Math\",\n  \"bio\": \"Bio\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/accounts/teachers/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "accounts",
+            "teachers",
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Course",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const data = pm.response.json();",
+              "pm.collectionVariables.set('course_id', data.course_id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"{{course_title}}\",\n  \"description\": \"Course description\",\n  \"level_id\": {{course_level_id}},\n  \"price\": \"120.00\",\n  \"duration_hours\": 10,\n  \"language_id\": {{language_id}},\n  \"category_id\": {{category_id}},\n  \"teacher_id\": {{teacher_id}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/courses/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "courses",
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Lesson",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const data = pm.response.json();",
+              "pm.collectionVariables.set('lesson_id', data.lesson_id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"course_id\": {{course_id}},\n  \"title\": \"Lesson 1\",\n  \"content\": \"Lesson content\",\n  \"video_url\": \"http://example.com/video\",\n  \"duration_minutes\": 45,\n  \"lesson_order\": 1\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/courses/lessons/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "courses",
+            "lessons",
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Assignment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const data = pm.response.json();",
+              "pm.collectionVariables.set('assignment_id', data.assignment_id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"lesson_id\": {{lesson_id}},\n  \"title\": \"Assignment 1\",\n  \"description\": \"Assignment description\",\n  \"deadline\": \"2030-01-01T12:00:00Z\",\n  \"max_score\": 100,\n  \"type_id\": {{assignment_type_id}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/courses/assignments/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "courses",
+            "assignments",
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "Enroll Student",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const data = pm.response.json();",
+              "pm.collectionVariables.set('enrollment_id', data.enrollment_id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"student_id\": {{student_id}},\n  \"course_id\": {{course_id}},\n  \"status_id\": {{enrollment_status_active_id}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/learning/enrollments/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "learning",
+            "enrollments",
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "Complete Enrollment",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"final_grade\": \"95.00\",\n  \"status_id\": {{enrollment_status_completed_id}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/learning/enrollments/student/{{student_id}}/course/{{course_id}}/complete/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "learning",
+            "enrollments",
+            "student",
+            "{{student_id}}",
+            "course",
+            "{{course_id}}",
+            "complete",
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Submission",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const data = pm.response.json();",
+              "pm.collectionVariables.set('submission_id', data.submission_id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"assignment_id\": {{assignment_id}},\n  \"student_id\": {{student_id}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/submissions/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "submissions",
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "Attach Submission File",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const data = pm.response.json();",
+              "pm.collectionVariables.set('file_id', data.file_id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"submission_id\": {{submission_id}},\n  \"file_url\": \"http://example.com/file.pdf\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/submissions/files/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "submissions",
+            "files",
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Review",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const data = pm.response.json();",
+              "pm.collectionVariables.set('review_id', data.review_id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"student_id\": {{student_id}},\n  \"course_id\": {{course_id}},\n  \"rating\": 5,\n  \"comment\": \"Great course\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/reviews/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "reviews",
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "Course Rating",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/reviews/courses/{{course_id}}/rating/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "reviews",
+            "courses",
+            "{{course_id}}",
+            "rating",
+            ""
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000"
+    }
+  ]
+}
+
+
