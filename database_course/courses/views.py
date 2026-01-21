@@ -9,6 +9,7 @@ from courses.serializers import (
     AssignmentCreateSerializer,
     AssignmentDetailSerializer,
     AssignmentListSerializer,
+    CourseAnalyticsSerializer,
     CourseCreateSerializer,
     CourseDetailSerializer,
     CourseListSerializer,
@@ -183,23 +184,138 @@ class CourseAnalyticsView(APIView):
     """
 
     def get(self, request, *args, **kwargs):
-        # 1. Total number of courses
+        from django.db.models import F, Count, Avg, Sum, Case, When, IntegerField
+        from learning.models import Enrollment
+        from submissions.models import Submission
+        from reviews.models import Review
+
+        # Basic analytics
         total_courses = Course.objects.count()
-
-        # 2. Total number of students
         total_students = Student.objects.count()
-
-        # 3. Average course price
         avg_price = Course.objects.aggregate(avg_price=Avg('price'))['avg_price'] or 0
-
-        # 4. Count of active assignments (assignments that belong to lessons in courses)
         total_assignments = Assignment.objects.count()
+
+        # Enhanced analytics
+        # 1. Top performing teachers by average course ratings
+        top_teachers = []
+        try:
+            top_teachers = Course.objects.select_related('teacher__user').values(
+                'teacher_id'
+            ).annotate(
+                teacher_user_first_name=F('teacher__user__first_name'),
+                teacher_user_last_name=F('teacher__user__last_name'),
+                avg_rating=Avg('enrollments__review__rating'),
+                course_count=Count('course_id')
+            ).filter(
+                avg_rating__isnull=False
+            ).order_by('-avg_rating')[:5]
+        except Exception as e:
+            print(f"Error in top_teachers query: {e}")
+
+        # 2. Most popular courses by enrollment count
+        popular_courses = []
+        try:
+            popular_courses = Course.objects.select_related('teacher__user', 'category').values(
+                'course_id',
+                'title'
+            ).annotate(
+                teacher_user_first_name=F('teacher__user__first_name'),
+                teacher_user_last_name=F('teacher__user__last_name'),
+                category_name=F('category__name'),
+                enrollment_count=Count('enrollments')
+            ).order_by('-enrollment_count')[:5]
+        except Exception as e:
+            print(f"Error in popular_courses query: {e}")
+
+        # 3. Student success rates by course completion
+        course_completion_stats = []
+        try:
+            course_completion_stats = Enrollment.objects.values(
+                'course_id'
+            ).annotate(
+                course_title=F('course__title'),
+                total_enrollments=Count('enrollment_id'),
+                completed_count=Count(Case(
+                    When(final_grade__isnull=False, then=1),
+                    output_field=IntegerField()
+                )),
+                completion_rate=Avg(Case(
+                    When(final_grade__isnull=False, then=100),
+                    default=0,
+                    output_field=IntegerField()
+                ))
+            ).order_by('-completion_rate')[:5]
+        except Exception as e:
+            print(f"Error in course_completion_stats query: {e}")
+
+        # 4. Assignment completion statistics
+        assignment_stats = []
+        try:
+            assignment_stats = Assignment.objects.values(
+                'lesson__course_id'
+            ).annotate(
+                course_title=F('lesson__course__title'),
+                total_assignments=Count('assignment_id'),
+                submitted_count=Count('submissions'),
+                submission_rate=Avg(Case(
+                    When(submissions__isnull=False, then=100),
+                    default=0,
+                    output_field=IntegerField()
+                ))
+            ).order_by('-submission_rate')
+        except Exception as e:
+            print(f"Error in assignment_stats query: {e}")
+
+        # 5. Revenue analytics by course category
+        revenue_by_category = []
+        try:
+            revenue_by_category = Course.objects.values().annotate(
+                category_name=F('category__name'),
+                total_revenue=Sum('price'),
+                course_count=Count('course_id')
+            ).order_by('-total_revenue')
+        except Exception as e:
+            print(f"Error in revenue_by_category query: {e}")
+
+        # 6. Course completion rates
+        overall_completion_rate = Enrollment.objects.aggregate(
+            completion_percentage=Avg(Case(
+                When(final_grade__isnull=False, then=100),
+                default=0,
+                output_field=IntegerField()
+            ))
+        )['completion_percentage'] or 0
+
+        # 7. Teacher activity metrics
+        teacher_activity = []
+        try:
+            teacher_activity = Course.objects.select_related('teacher__user').values(
+                'teacher_id'
+            ).annotate(
+                teacher_user_first_name=F('teacher__user__first_name'),
+                teacher_user_last_name=F('teacher__user__last_name'),
+                course_count=Count('course_id'),
+                total_students=Count('enrollments__student_id', distinct=True),
+                avg_course_rating=Avg('enrollments__review__rating')
+            ).order_by('-course_count')
+        except Exception as e:
+            print(f"Error in teacher_activity query: {e}")
 
         data = {
             'total_courses': total_courses,
             'total_students': total_students,
             'average_course_price': round(float(avg_price), 2),
             'total_assignments': total_assignments,
+
+            # Enhanced analytics
+            'top_teachers': list(top_teachers),
+            'popular_courses': list(popular_courses),
+            'course_completion_stats': list(course_completion_stats),
+            'assignment_stats': list(assignment_stats),
+            'revenue_by_category': list(revenue_by_category),
+            'overall_completion_rate': round(float(overall_completion_rate), 2),
+            'teacher_activity': list(teacher_activity),
         }
 
-        return Response(data)
+        serializer = CourseAnalyticsSerializer(data)
+        return Response(serializer.data)

@@ -223,3 +223,37 @@ class CourseStructureRowSerializer(serializers.Serializer):
     deadline = serializers.DateTimeField(allow_null=True)
     max_score = serializers.IntegerField(allow_null=True)
     assignment_type = serializers.CharField(allow_null=True)
+
+
+class CourseAnalyticsSerializer(serializers.Serializer):
+    total_courses = serializers.IntegerField()
+    total_students = serializers.IntegerField()
+    average_course_price = serializers.FloatField()
+    total_assignments = serializers.IntegerField()
+
+    # Enhanced analytics
+    top_teachers = serializers.ListField(
+        child=serializers.DictField(),
+        required=False
+    )
+    popular_courses = serializers.ListField(
+        child=serializers.DictField(),
+        required=False
+    )
+    course_completion_stats = serializers.ListField(
+        child=serializers.DictField(),
+        required=False
+    )
+    assignment_stats = serializers.ListField(
+        child=serializers.DictField(),
+        required=False
+    )
+    revenue_by_category = serializers.ListField(
+        child=serializers.DictField(),
+        required=False
+    )
+    overall_completion_rate = serializers.FloatField(required=False)
+    teacher_activity = serializers.ListField(
+        child=serializers.DictField(),
+        required=False
+    )

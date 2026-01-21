@@ -40,4 +40,9 @@ urlpatterns = [
         views.TeacherDetailView.as_view(),
         name="teacher-detail",
     ),
+    path(
+        "students/<int:user_id>/report/",
+        views.StudentReportView.as_view(),
+        name="student-report",
+    ),
 ]
